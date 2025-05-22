@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aplikasi Kasir Seragam Sekolah</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px;
+    background: #e8f0fe;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 2px #a3bffa;
+  }
+
+  label {
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 8px;
+    color: #34495e;
+  }
+
+  #namaPembeli {
+    padding: 8px 12px;
+    width: 320px;
+    font-size: 1rem;
+    border: 2px solid #4a90e2;
+    border-radius: 5px;
+    margin-bottom: 25px;
+    transition: border-color 0.3s;
+  }
+  #namaPembeli:focus {
+    border-color: #1e62d0;
+    outline: none;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    background: white;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+  th {
+    background: #4a90e2;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  tr:hover:not(:first-child) {
+    background-color: #f1f8ff;
+  }
+
+  #cartTable th, #cartTable td {
+    text-align: center;
+  }
+
+  button {
+    background-color: #4a90e2;
+    border: none;
+    color: white;
+    padding: 9px 16px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #1e62d0;
+  }
+
+  button:active {
+    background-color: #144a9d;
+  }
+
+  button:focus {
+    outline: 2px solid #1e62d0;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    #namaPembeli {
+      width: 100%;
+    }
+    table, th, td {
+      font-size: 0.9rem;
+    }
+    button {
+      font-size: 0.9rem;
+      padding: 8px 14px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Aplikasi Kasir Seragam Sekolah</h1>
+
+<label for="namaPembeli">Nama Pembeli:</label>
+<input type="text" id="namaPembeli" placeholder="Masukkan nama pembeli..." />
+
+<h2>Daftar Produk</h2>
+<table id="productTable">
+  <thead>
+    <tr>
+      <th>Kode</th><th>Nama</th><th>Harga (Rp)</th><th>Jumlah</th><th>Tambah</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Produk akan dimasukkan di sini oleh JavaScript -->
+  </tbody>
+</table>
+
+<h2>Keranjang Belanja</h2>
+<table id="cartTable">
+  <thead>
+    <tr>
+      <th>Kode</th><th>Nama</th><th>Harga (Rp)</th><th>Jumlah</th><th>Subtotal (Rp)</th><th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Isi keranjang -->
+  </tbody>
+</table>
+
+<button onclick="checkout()">Checkout & Simpan Struk</button>
+
+<script>
+  const products = [
+    { kode: "BJS01", nama: "Baju SD Putih", harga: 50000 },
+    { kode: "BJS02", nama: "Baju SD Biru", harga: 55000 },
+    { kode: "CLS01", nama: "Celana SD Panjang", harga: 60000 },
+    { kode: "CLS02", nama: "Celana SD Pendek", harga: 55000 },
+    { kode: "BMS01", nama: "Baju SMP Putih", harga: 65000 },
+    { kode: "BMS02", nama: "Baju SMP Biru", harga: 70000 },
+    { kode: "CMS01", nama: "Celana SMP Panjang", harga: 75000 },
+    { kode: "CMS02", nama: "Celana SMP Pendek", harga: 70000 },
+    { kode: "BMA01", nama: "Baju SMA Putih", harga: 80000 },
+    { kode: "BMA02", nama: "Baju SMA Biru", harga: 85000 },
+    { kode: "CMA01", nama: "Celana SMA Panjang", harga: 90000 },
+    { kode: "CMA02", nama: "Celana SMA Pendek", harga: 85000 },
+    { kode: "JLB01", nama: "Jilbab Sekolah", harga: 40000 },
+    { kode: "KKS01", nama: "Kaos Kaki SD", harga: 15000 },
+    { kode: "KKS02", nama: "Kaos Kaki SMP/SMA", harga: 20000 },
+    { kode: "IPG01", nama: "Ikat Pinggang SD/SMP/SMA", harga: 30000 },
+    { kode: "DSI01", nama: "Dasi SMP", harga: 25000 },
+    { kode: "DSI02", nama: "Dasi SMA", harga: 30000 }
+  ];
+
+  let cart = [];
+
+  function renderProducts() {
+    const tbody = document.querySelector("#productTable tbody");
+    tbody.innerHTML = "";
+    products.forEach(prod => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${prod.kode}</td>
+        <td>${prod.nama}</td>
+        <td>${prod.harga.toLocaleString()}</td>
+        <td><input type="number" min="1" value="1" id="qty_${prod.kode}" style="width:60px" /></td>
+        <td><button onclick="addToCart('${prod.kode}')">Tambah</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function addToCart(kode) {
+    const qtyInput = document.getElementById(`qty_${kode}`);
+    let jumlah = parseInt(qtyInput.value);
+    if (isNaN(jumlah) || jumlah < 1) {
+      alert("Jumlah harus minimal 1");
+      return;
+    }
+
+    const produk = products.find(p => p.kode === kode);
+    if (!produk) return;
+
+    const index = cart.findIndex(item => item.kode === kode);
+    if (index === -1) {
+      cart.push({ ...produk, jumlah });
+    } else {
+      cart[index].jumlah += jumlah;
+    }
+    updateKeranjang();
+  }
+
+  function updateKeranjang() {
+    const tbody = document.querySelector("#cartTable tbody");
+    tbody.innerHTML = "";
+    cart.forEach((item, idx) => {
+      const subtotal = item.harga * item.jumlah;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.kode}</td>
+        <td>${item.nama}</td>
+        <td>${item.harga.toLocaleString()}</td>
+        <td>${item.jumlah}</td>
+        <td>${subtotal.toLocaleString()}</td>
+        <td><button onclick="hapusItem(${idx})" style="background:#e74c3c;">Hapus</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function hapusItem(idx) {
+    cart.splice(idx, 1);
+    updateKeranjang();
+  }
+
+  function saveToFile(content, filename) {
+    const blob = new Blob([content], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function getHariNama(date) {
+    const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    return hari[date.getDay()];
+  }
+
+  function checkout() {
+    if (cart.length === 0) {
+      alert("Keranjang masih kosong!");
+      return;
+    }
+
+    const namaPembeli = document.getElementById("namaPembeli").value.trim();
+    if (namaPembeli === "") {
+      alert("Mohon isi nama pembeli!");
+      return;
+    }
+
+    const now = new Date();
+    const hariNama = getHariNama(now);
+    const tanggal = now.toLocaleDateString("id-ID");
+    const waktu = now.toLocaleTimeString("id-ID");
+
+    let struk = `Struk Pembelian\n\nNama Pembeli: ${namaPembeli}\nTanggal: ${hariNama}, ${tanggal}\nWaktu: ${waktu}\n\n`;
+    let total = 0;
+    cart.forEach(item => {
+      const subtotal = item.harga * item.jumlah;
+      struk += `${item.kode} - ${item.nama} x${item.jumlah} = Rp ${subtotal.toLocaleString()}\n`;
+      total += subtotal;
+    });
+    struk += `\nTotal: Rp ${total.toLocaleString()}\n\nTerima kasih atas pembelian Anda!`;
+
+    alert(struk);
+
+    const filename = `struk_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}.txt`;
+    saveToFile(struk, filename);
+
+    cart = [];
+    updateKeranjang();
+    document.getElementById("namaPembeli").value = "";
+  }
+
+  renderProducts();
+  updateKeranjang();
+</script>
+
+</body>
+</html>
